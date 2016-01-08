@@ -10,15 +10,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+var Fluent = require('fluent-js');
 var ChatAppDispatcher = require('../dispatcher/ChatAppDispatcher');
-var ChatConstants = require('../constants/ChatConstants');
 var ChatMessageUtils = require('../utils/ChatMessageUtils');
-var EventEmitter = require('events').EventEmitter;
 var ThreadStore = require('../stores/ThreadStore');
-var assign = require('object-assign');
-
-var ActionTypes = ChatConstants.ActionTypes;
-var CHANGE_EVENT = 'change';
 
 var _messages = {};
 
@@ -41,35 +36,20 @@ function _markAllInThreadRead(threadID) {
   }
 }
 
-var MessageStore = assign({}, EventEmitter.prototype, {
+class MessageStore extends Fluent.Store {
 
-  emitChange: function() {
-    this.emit(CHANGE_EVENT);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  addChangeListener: function(callback) {
-    this.on(CHANGE_EVENT, callback);
-  },
-
-  removeChangeListener: function(callback) {
-    this.removeListener(CHANGE_EVENT, callback);
-  },
-
-  get: function(id) {
+  get(id) {
     return _messages[id];
-  },
+  }
 
-  getAll: function() {
+  getAll() {
     return _messages;
-  },
+  }
 
   /**
    * @param {string} threadID
    */
-  getAllForThread: function(threadID) {
+  getAllForThread(threadID) {
     var threadMessages = [];
     for (var id in _messages) {
       if (_messages[id].threadID === threadID) {
@@ -85,44 +65,43 @@ var MessageStore = assign({}, EventEmitter.prototype, {
       return 0;
     });
     return threadMessages;
-  },
+  }
 
-  getAllForCurrentThread: function() {
+  getAllForCurrentThread() {
     return this.getAllForThread(ThreadStore.getCurrentID());
   }
 
-});
+}
 
-MessageStore.dispatchToken = ChatAppDispatcher.register(function(action) {
+var actionHandlers = {
 
-  switch(action.type) {
+  viewActionHandlers: {
 
-    case ActionTypes.CLICK_THREAD:
-      ChatAppDispatcher.waitFor([ThreadStore.dispatchToken]);
+    clickThread(threadID) {
+      this.waitFor([ThreadStore]);
       _markAllInThreadRead(ThreadStore.getCurrentID());
-      MessageStore.emitChange();
-      break;
+    },
 
-    case ActionTypes.CREATE_MESSAGE:
+    createMessage(text, currentThreadID) {
       var message = ChatMessageUtils.getCreatedMessageData(
-        action.text,
-        action.currentThreadID
+        text,
+        currentThreadID
       );
       _messages[message.id] = message;
-      MessageStore.emitChange();
-      break;
+    }
 
-    case ActionTypes.RECEIVE_RAW_MESSAGES:
-      _addMessages(action.rawMessages);
-      ChatAppDispatcher.waitFor([ThreadStore.dispatchToken]);
+  },
+
+  serverActionHandlers: {
+
+    receiveAll(rawMessages) {
+      _addMessages(rawMessages);
+      this.waitFor([ThreadStore]);
       _markAllInThreadRead(ThreadStore.getCurrentID());
-      MessageStore.emitChange();
-      break;
+    }
 
-    default:
-      // do nothing
   }
 
-});
+};
 
-module.exports = MessageStore;
+module.exports = new MessageStore(ChatAppDispatcher, actionHandlers);

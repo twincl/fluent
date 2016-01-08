@@ -10,21 +10,16 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+var Fluent = require('fluent-js');
 var ChatAppDispatcher = require('../dispatcher/ChatAppDispatcher');
-var ChatConstants = require('../constants/ChatConstants');
 var ChatMessageUtils = require('../utils/ChatMessageUtils');
-var EventEmitter = require('events').EventEmitter;
-var assign = require('object-assign');
-
-var ActionTypes = ChatConstants.ActionTypes;
-var CHANGE_EVENT = 'change';
 
 var _currentID = null;
 var _threads = {};
 
-var ThreadStore = assign({}, EventEmitter.prototype, {
+class ThreadStore extends Fluent.Store {
 
-  init: function(rawMessages) {
+  init(rawMessages) {
     rawMessages.forEach(function(message) {
       var threadID = message.threadID;
       var thread = _threads[threadID];
@@ -44,38 +39,20 @@ var ThreadStore = assign({}, EventEmitter.prototype, {
     }
 
     _threads[_currentID].lastMessage.isRead = true;
-  },
-
-  emitChange: function() {
-    this.emit(CHANGE_EVENT);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  addChangeListener: function(callback) {
-    this.on(CHANGE_EVENT, callback);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  removeChangeListener: function(callback) {
-    this.removeListener(CHANGE_EVENT, callback);
-  },
+  }
 
   /**
    * @param {string} id
    */
-  get: function(id) {
+  get(id) {
     return _threads[id];
-  },
+  }
 
-  getAll: function() {
+  getAll() {
     return _threads;
-  },
+  }
 
-  getAllChrono: function() {
+  getAllChrono() {
     var orderedThreads = [];
     for (var id in _threads) {
       var thread = _threads[id];
@@ -90,37 +67,39 @@ var ThreadStore = assign({}, EventEmitter.prototype, {
       return 0;
     });
     return orderedThreads;
-  },
+  }
 
-  getCurrentID: function() {
+  getCurrentID() {
     return _currentID;
-  },
+  }
 
-  getCurrent: function() {
+  getCurrent() {
     return this.get(this.getCurrentID());
   }
 
-});
+}
 
-ThreadStore.dispatchToken = ChatAppDispatcher.register(function(action) {
+var actionHandlers = {
 
-  switch(action.type) {
+  viewActionHandlers: {
 
-    case ActionTypes.CLICK_THREAD:
-      _currentID = action.threadID;
+    clickThread(threadID) {
+      _currentID = threadID;
       _threads[_currentID].lastMessage.isRead = true;
-      ThreadStore.emitChange();
-      break;
+    }
 
-    case ActionTypes.RECEIVE_RAW_MESSAGES:
-      ThreadStore.init(action.rawMessages);
-      ThreadStore.emitChange();
-      break;
+  },
 
-    default:
-      // do nothing
+  serverActionHandlers: {
+
+    receiveAll(rawMessages) {
+      threadStore.init(rawMessages);
+    }
+
   }
 
-});
+};
 
-module.exports = ThreadStore;
+var threadStore = new ThreadStore(ChatAppDispatcher, actionHandlers);
+
+module.exports = threadStore;

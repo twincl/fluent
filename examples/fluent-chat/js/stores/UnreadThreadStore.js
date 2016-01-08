@@ -10,37 +10,14 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+var Fluent = require('fluent-js');
 var ChatAppDispatcher = require('../dispatcher/ChatAppDispatcher');
-var ChatConstants = require('../constants/ChatConstants');
-var EventEmitter = require('events').EventEmitter;
 var MessageStore = require('../stores/MessageStore');
 var ThreadStore = require('../stores/ThreadStore');
-var assign = require('object-assign');
 
-var ActionTypes = ChatConstants.ActionTypes;
-var CHANGE_EVENT = 'change';
+class UnreadThreadStore extends Fluent.Store {
 
-var UnreadThreadStore = assign({}, EventEmitter.prototype, {
-
-  emitChange: function() {
-    this.emit(CHANGE_EVENT);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  addChangeListener: function(callback) {
-    this.on(CHANGE_EVENT, callback);
-  },
-
-  /**
-   * @param {function} callback
-   */
-  removeChangeListener: function(callback) {
-    this.removeListener(CHANGE_EVENT, callback);
-  },
-
-  getCount: function() {
+  getCount() {
     var threads = ThreadStore.getAll();
     var unreadCount = 0;
     for (var id in threads) {
@@ -51,27 +28,26 @@ var UnreadThreadStore = assign({}, EventEmitter.prototype, {
     return unreadCount;
   }
 
-});
+}
 
-UnreadThreadStore.dispatchToken = ChatAppDispatcher.register(function(action) {
-  ChatAppDispatcher.waitFor([
-    ThreadStore.dispatchToken,
-    MessageStore.dispatchToken
-  ]);
+var actionHandlers = {
 
-  switch (action.type) {
+  viewActionHandlers: {
 
-    case ActionTypes.CLICK_THREAD:
-      UnreadThreadStore.emitChange();
-      break;
+    clickThread(threadID) {
+      this.waitFor([ThreadStore, MessageStore]);
+    }
 
-    case ActionTypes.RECEIVE_RAW_MESSAGES:
-      UnreadThreadStore.emitChange();
-      break;
+  },
 
-    default:
-      // do nothing
+  serverActionHandlers: {
+
+    receiveAll(rawMessages) {
+      this.waitFor([ThreadStore, MessageStore]);
+    }
+
   }
-});
 
-module.exports = UnreadThreadStore;
+};
+
+module.exports = new UnreadThreadStore(ChatAppDispatcher, actionHandlers);

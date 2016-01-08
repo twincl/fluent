@@ -11,6 +11,7 @@
  */
 
 var React = require('react');
+var Fluent = require('fluent-js');
 var ThreadListItem = require('../components/ThreadListItem.react');
 var ThreadStore = require('../stores/ThreadStore');
 var UnreadThreadStore = require('../stores/UnreadThreadStore');
@@ -23,23 +24,15 @@ function getStateFromStores() {
   };
 }
 
-var ThreadSection = React.createClass({
+class ThreadSection extends React.Component {
 
-  getInitialState: function() {
-    return getStateFromStores();
-  },
+  constructor(props) {
+    super(props);
+    this.state = getStateFromStores();
+    this.onChange = this._onChange;
+  }
 
-  componentDidMount: function() {
-    ThreadStore.addChangeListener(this._onChange);
-    UnreadThreadStore.addChangeListener(this._onChange);
-  },
-
-  componentWillUnmount: function() {
-    ThreadStore.removeChangeListener(this._onChange);
-    UnreadThreadStore.removeChangeListener(this._onChange);
-  },
-
-  render: function() {
+  render() {
     var threadListItems = this.state.threads.map(function(thread) {
       return (
         <ThreadListItem
@@ -63,15 +56,15 @@ var ThreadSection = React.createClass({
           </ul>
       </div>
     );
-  },
+  }
 
   /**
    * Event handler for 'change' events coming from the stores
    */
-  _onChange: function() {
+  _onChange() {
     this.setState(getStateFromStores());
   }
 
-});
+}
 
-module.exports = ThreadSection;
+module.exports = Fluent.connectToStores(React, ThreadSection, [ThreadStore, UnreadThreadStore], 'onChange');

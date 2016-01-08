@@ -10,25 +10,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+var Fluent = require('fluent-js');
 var ChatAppDispatcher = require('../dispatcher/ChatAppDispatcher');
-var ChatConstants = require('../constants/ChatConstants');
 
-var ActionTypes = ChatConstants.ActionTypes;
+class ChatServerActions extends Fluent.Actions {
 
-module.exports = {
-
-  receiveAll: function(rawMessages) {
-    ChatAppDispatcher.dispatch({
-      type: ActionTypes.RECEIVE_RAW_MESSAGES,
-      rawMessages: rawMessages
-    });
-  },
-
-  receiveCreatedMessage: function(createdMessage) {
-    ChatAppDispatcher.dispatch({
-      type: ActionTypes.RECEIVE_RAW_CREATED_MESSAGE,
-      rawMessage: createdMessage
-    });
+  receiveAll(rawMessages) {
+    this.dispatch(rawMessages);
   }
 
-};
+  receiveCreatedMessage(createdMessage) {
+    this.dispatch(createdMessage);
+  }
+
+}
+
+module.exports = new ChatServerActions(ChatAppDispatcher, true);

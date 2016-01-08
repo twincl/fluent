@@ -10,6 +10,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-var Dispatcher = require('flux').Dispatcher;
+var Dispatcher = require('fluent-js').Dispatcher;
 
 module.exports = new Dispatcher();

@@ -10,18 +10,15 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+var Fluent = require('fluent-js');
 var ChatAppDispatcher = require('../dispatcher/ChatAppDispatcher');
-var ChatConstants = require('../constants/ChatConstants');
 
-var ActionTypes = ChatConstants.ActionTypes;
+class ChatThreadActions extends Fluent.Actions {
 
-module.exports = {
-
-  clickThread: function(threadID) {
-    ChatAppDispatcher.dispatch({
-      type: ActionTypes.CLICK_THREAD,
-      threadID: threadID
-    });
+  clickThread(threadID) {
+    this.dispatch(threadID);
   }
 
-};
+}
+
+module.exports = new ChatThreadActions(ChatAppDispatcher);

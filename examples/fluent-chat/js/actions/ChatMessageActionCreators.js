@@ -10,23 +10,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+var Fluent = require('fluent-js');
 var ChatAppDispatcher = require('../dispatcher/ChatAppDispatcher');
-var ChatConstants = require('../constants/ChatConstants');
 var ChatWebAPIUtils = require('../utils/ChatWebAPIUtils');
 var ChatMessageUtils = require('../utils/ChatMessageUtils');
 
-var ActionTypes = ChatConstants.ActionTypes;
+class ChatMessageActions extends Fluent.Actions {
 
-module.exports = {
-
-  createMessage: function(text, currentThreadID) {
-    ChatAppDispatcher.dispatch({
-      type: ActionTypes.CREATE_MESSAGE,
-      text: text,
-      currentThreadID: currentThreadID
-    });
+  createMessage(text, currentThreadID) {
+    this.dispatch(text, currentThreadID);
     var message = ChatMessageUtils.getCreatedMessageData(text, currentThreadID);
     ChatWebAPIUtils.createMessage(message);
   }
 
-};
+}
+
+module.exports = new ChatMessageActions(ChatAppDispatcher);

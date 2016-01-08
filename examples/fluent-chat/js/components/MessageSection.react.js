@@ -10,6 +10,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+var Fluent = require('fluent-js');
 var MessageComposer = require('./MessageComposer.react');
 var MessageListItem = require('./MessageListItem.react');
 var MessageStore = require('../stores/MessageStore');
@@ -32,24 +33,19 @@ function getMessageListItem(message) {
   );
 }
 
-var MessageSection = React.createClass({
+class MessageSection extends React.Component {
 
-  getInitialState: function() {
-    return getStateFromStores();
-  },
+  constructor(props) {
+    super(props);
+    this.state = getStateFromStores();
+    this.onChange = this._onChange;
+  }
 
-  componentDidMount: function() {
+  componentDidMount() {
     this._scrollToBottom();
-    MessageStore.addChangeListener(this._onChange);
-    ThreadStore.addChangeListener(this._onChange);
-  },
+  }
 
-  componentWillUnmount: function() {
-    MessageStore.removeChangeListener(this._onChange);
-    ThreadStore.removeChangeListener(this._onChange);
-  },
-
-  render: function() {
+  render() {
     var messageListItems = this.state.messages.map(getMessageListItem);
     return (
       <div className="message-section">
@@ -60,24 +56,24 @@ var MessageSection = React.createClass({
         <MessageComposer threadID={this.state.thread.id}/>
       </div>
     );
-  },
+  }
 
-  componentDidUpdate: function() {
+  componentDidUpdate() {
     this._scrollToBottom();
-  },
+  }
 
-  _scrollToBottom: function() {
+  _scrollToBottom() {
     var ul = this.refs.messageList.getDOMNode();
     ul.scrollTop = ul.scrollHeight;
-  },
+  }
 
   /**
    * Event handler for 'change' events coming from the MessageStore
    */
-  _onChange: function() {
+  _onChange() {
     this.setState(getStateFromStores());
   }
 
-});
+}
 
-module.exports = MessageSection;
+module.exports = Fluent.connectToStores(React, MessageSection, [MessageStore, ThreadStore], 'onChange');
