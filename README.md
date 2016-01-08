@@ -11,8 +11,13 @@ FluentJS is a tiny Flux implementation we’re using in our site [twincl.com](ht
 
 If you already know Flux, a quick way to glimpse FluentJS is by looking at our [`fluent-chat`](https://github.com/twincl/fluent/tree/master/examples) example modified from the Facebook `flux-chat` code. This [commit](https://github.com/twincl/fluent/commit/32aab0b6ca32ddba01151f17fbf4ac029c0c06cb) shows the code changes. As you can see, lots of repetitive code were removed.
 
-### Usage
+### Installation
 
 To install FluentJS, type:
 
     npm install --save fluent-js
+
+### Usage
+
+See [this page](https://twincl.com/@arthurtw/*613/fluent-js-a-tiny-facebook-flux-library).
+
