@@ -19,5 +19,5 @@ To install FluentJS, type:
 
 ### Usage
 
-See [this page](https://twincl.com/@arthurtw/*613/fluent-js-a-tiny-facebook-flux-library).
+See [this page](https://twincl.com/@arthurtw/*613/fluent-js-a-tiny-facebook-flux-library) (English) or [this page](https://tw.twincl.com/programming/*631e) (中文).
 
