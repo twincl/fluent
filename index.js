@@ -1,5 +1,6 @@
 var Dispatcher = require('flux').Dispatcher;
 var EventEmitter = require('events').EventEmitter;
+var clone = require('clone');
 
 var CHANGE_EVENT = 'change';
 var VIEW_ACTION = 'VIEW_ACTION.';
@@ -92,7 +93,7 @@ function connectToStores(React, Component, stores, onChangeName) {
       var props = this.props;
       if (onChangeName) {
         // Reference to the wrapped element for _onChange handler
-        props = JSON.parse(JSON.stringify(props));
+				props = clone(props);
         props.ref = 'wrapped';
       }
       return React.createElement(Component, props);

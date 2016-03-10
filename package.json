@@ -7,6 +7,7 @@
   "author": "Arthur Liao",
   "main": "index.js",
   "dependencies": {
-    "flux": "^2.1.1"
+    "flux": "^2.1.1",
+		"clone": "^1.0.2"
   }
 }
